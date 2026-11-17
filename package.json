@@ -1,0 +1,23 @@
+{
+  "name": "amigo-invisible",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Organiza sorteos de Amigo Invisible sin base de datos: Vue 3 + Node.js con persistencia en archivos JSON.",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:server": "npm run dev --workspace server",
+    "dev:client": "npm run dev --workspace client",
+    "build": "npm run build --workspace client",
+    "start": "npm run start --workspace server",
+    "test": "npm test --workspace server"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}

@@ -1,0 +1,7 @@
+# HTTPS automático (Let's Encrypt) para el dominio definido en DOMAIN.
+# Caddy no escribe logs de acceso salvo que se añada la directiva "log",
+# así que las cabeceras con tokens nunca acaban en disco.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy app:3000
+}

@@ -1,0 +1,38 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATA_DIR: /data
+      TRUST_PROXY: "1"
+      FORCE_HTTPS: "true"
+    volumes:
+      # Volumen persistente: los grupos sobreviven a reinicios y actualizaciones del contenedor.
+      - amigo-data:/data
+    expose:
+      - "3000"
+    # Detenerse con tiempo para terminar escrituras en curso.
+    stop_grace_period: 20s
+
+  # Proxy inverso con HTTPS automático (Let's Encrypt). Define DOMAIN en .env.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  amigo-data:
+  caddy-data:
+  caddy-config:

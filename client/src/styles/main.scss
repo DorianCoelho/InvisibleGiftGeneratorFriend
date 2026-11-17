@@ -1,0 +1,141 @@
+// Tema: regalos y Navidad, pero válido todo el año.
+$gift-red: #c8102e;
+$pine: #14532d;
+$gold: #d4a017;
+$cream: #fff8ef;
+$ink: #1f2937;
+
+$primary: $gift-red;
+$secondary: #64748b;
+$success: #15803d;
+$warning: #f59e0b;
+$danger: #b91c1c;
+$info: #0e7490;
+$body-bg: $cream;
+$body-color: $ink;
+$font-family-sans-serif: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+$headings-font-family: 'Fraunces Variable', Georgia, serif;
+$headings-font-weight: 700;
+$border-radius: 0.75rem;
+$border-radius-lg: 1.1rem;
+$border-radius-sm: 0.5rem;
+$btn-border-radius: 999px;
+$btn-border-radius-lg: 999px;
+$btn-border-radius-sm: 999px;
+$btn-font-weight: 600;
+$input-border-color: #e7dccd;
+$input-focus-border-color: lighten($gift-red, 25%);
+$card-border-color: #f1e6d8;
+$link-color: $gift-red;
+$enable-shadows: false;
+
+@import 'bootstrap/scss/bootstrap';
+
+:root {
+  --gift-red: #{$gift-red};
+  --pine: #{$pine};
+  --gold: #{$gold};
+  --cream: #{$cream};
+  --ink: #{$ink};
+  --soft-shadow: 0 10px 30px -12px rgba(120, 53, 15, 0.25);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(200, 16, 46, 0.06), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(20, 83, 45, 0.06), transparent 40%),
+    $cream;
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, .display-font {
+  font-family: $headings-font-family;
+  letter-spacing: -0.01em;
+}
+
+.btn-pine {
+  @include button-variant($pine, $pine, $hover-background: darken($pine, 5%), $hover-border: darken($pine, 5%));
+}
+
+.btn-gold {
+  @include button-variant($gold, $gold, $color: #fff, $hover-background: darken($gold, 6%), $hover-border: darken($gold, 6%), $hover-color: #fff);
+}
+
+.card-soft {
+  background: #fff;
+  border: 1px solid $card-border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: var(--soft-shadow);
+}
+
+.text-pine { color: $pine !important; }
+.text-gold { color: $gold !important; }
+.bg-pine { background: $pine !important; }
+
+.ribbon-header {
+  background: linear-gradient(135deg, $gift-red, darken($gift-red, 12%));
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+    pointer-events: none;
+  }
+}
+
+.page-narrow { max-width: 760px; }
+.page-wide { max-width: 1100px; }
+
+.icon-bubble {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.budget-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba($gold, 0.15);
+  color: darken($gold, 22%);
+  border: 1px solid rgba($gold, 0.4);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+}
+
+.fade-up-enter-active, .fade-up-leave-active { transition: all 0.25s ease; }
+.fade-up-enter-from, .fade-up-leave-to { opacity: 0; transform: translateY(8px); }
+
+.form-label { font-weight: 600; font-size: 0.92rem; }
+.form-control, .form-select { padding: 0.65rem 0.9rem; }
+
+.honeypot {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
