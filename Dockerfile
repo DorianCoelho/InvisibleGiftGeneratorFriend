@@ -36,12 +36,12 @@ COPY server server
 COPY --from=build /app/client/dist client/dist
 
 # Directorio de datos persistente (montar un volumen aquí), propiedad del usuario sin privilegios.
+# Sin instrucción VOLUME: algunas plataformas (Railway) la rechazan; el volumen se monta desde fuera.
 RUN mkdir -p /data && chown -R node:node /data
-VOLUME ["/data"]
 USER node
 
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-  CMD wget -qO- http://127.0.0.1:3000/healthz || exit 1
+  CMD wget -qO- "http://127.0.0.1:${PORT}/healthz" || exit 1
 
 CMD ["node", "server/src/index.js"]
