@@ -31,7 +31,7 @@ function next() {
     <h2 class="h4 mb-1"><i class="bi bi-sliders text-primary me-2"></i>Configura el grupo</h2>
     <p class="text-secondary mb-4">Los datos básicos del intercambio.</p>
 
-    <div class="row g-3">
+    <div class="settings-grid">
       <div class="col-12">
         <label for="g-name" class="form-label">Nombre del grupo o evento</label>
         <input id="g-name" v-model="wizard.group.name" type="text" class="form-control form-control-lg" :class="{ 'is-invalid': errors.name }"
@@ -39,8 +39,8 @@ function next() {
         <div class="invalid-feedback">{{ errors.name }}</div>
       </div>
 
-      <div class="col-md-6">
-        <label for="g-count" class="form-label">Número de participantes</label>
+      <div class="settings-count">
+        <label for="g-count" class="form-label d-block">Número de participantes</label>
         <div class="input-group">
           <button type="button" class="btn btn-outline-secondary" aria-label="Quitar participante" @click="changeCount(-1)"><i class="bi bi-dash-lg"></i></button>
           <input id="g-count" v-model.number="wizard.group.participantCount" type="number" class="form-control text-center"
@@ -51,16 +51,26 @@ function next() {
         <div class="form-text">Si tú también participas, inclúyete en el número.</div>
       </div>
 
-      <div class="col-md-6">
-        <label for="g-budget" class="form-label">Presupuesto máximo por regalo</label>
-        <div class="input-group">
-          <input id="g-budget" v-model.number="wizard.group.budget" type="number" class="form-control" :class="{ 'is-invalid': errors.budget }"
-            min="1" step="0.5" inputmode="decimal" />
-          <select v-model="wizard.group.currency" class="form-select currency-select" aria-label="Moneda">
+      <div class="settings-budget">
+        <span class="form-label d-block" id="g-budget-label">Presupuesto por regalo</span>
+        <div class="budget-fields">
+          <div class="input-group has-validation">
+            <label class="input-group-text" for="g-budget-min">Desde</label>
+            <input id="g-budget-min" v-model.number="wizard.group.budgetMin" type="number" class="form-control" :class="{ 'is-invalid': errors.budgetMin }"
+              min="0.01" step="0.5" inputmode="decimal" aria-describedby="g-budget-label" />
+            <div class="invalid-feedback">{{ errors.budgetMin }}</div>
+          </div>
+          <div class="input-group has-validation">
+            <label class="input-group-text" for="g-budget-max">Hasta</label>
+            <input id="g-budget-max" v-model.number="wizard.group.budgetMax" type="number" class="form-control" :class="{ 'is-invalid': errors.budgetMax }"
+              min="0.01" step="0.5" inputmode="decimal" aria-describedby="g-budget-label" />
+            <div class="invalid-feedback">{{ errors.budgetMax }}</div>
+          </div>
+          <select id="g-currency" v-model="wizard.group.currency" class="form-select currency-select" aria-label="Moneda">
             <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
           </select>
-          <div class="invalid-feedback">{{ errors.budget }}</div>
         </div>
+        <div class="form-text">Cada persona gastará un importe dentro de este rango.</div>
       </div>
 
       <div class="col-12">
@@ -99,7 +109,47 @@ function next() {
 </template>
 
 <style scoped>
-.currency-select {
-  max-width: 6.5rem;
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.85fr) minmax(0, 1.35fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.settings-grid > .col-12 {
+  grid-column: 1 / -1;
+}
+
+.settings-count,
+.settings-budget {
+  min-width: 0;
+}
+
+.budget-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 5.75rem;
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.budget-fields .input-group-text {
+  color: var(--bs-secondary-color);
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 680px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .budget-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .currency-select {
+    max-width: 8rem;
+  }
 }
 </style>
+

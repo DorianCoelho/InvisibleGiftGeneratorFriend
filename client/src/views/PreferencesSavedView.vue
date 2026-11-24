@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import LoadingState from '../components/LoadingState.vue';
 import { api, linkErrorRoute, useLinkToken } from '../api.js';
-import { formatMoney } from '../format.js';
+import { formatBudgetRange } from '../format.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -50,7 +50,7 @@ onMounted(async () => {
         <p class="text-secondary">
           <i class="bi bi-hourglass-split me-1"></i>
           Faltan {{ pending }} {{ pending === 1 ? 'persona' : 'personas' }}. Cuando todos respondan haremos el sorteo automáticamente y te
-          enviaremos por correo a quién te ha tocado regalar (máximo {{ formatMoney(session.group.budget, session.group.currency) }}).
+          enviaremos por correo a quién te ha tocado regalar (presupuesto {{ formatBudgetRange(session.group.budgetMin, session.group.budgetMax, session.group.currency) }}).
         </p>
       </template>
 

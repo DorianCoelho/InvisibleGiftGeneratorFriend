@@ -49,17 +49,28 @@ const httpUrl = z
 
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'MXN', 'ARS', 'COP', 'CLP', 'PEN'];
 
+const money = (label) =>
+  z.coerce
+    .number({ error: `${label} debe ser un número.` })
+    .positive(`${label} debe ser mayor que 0.`)
+    .max(100000, `${label} es demasiado alto.`)
+    .transform((v) => Math.round(v * 100) / 100);
+
+/** Lee el rango aunque el grupo se creara con un único presupuesto máximo. */
+export function budgetFields(group) {
+  const budgetMax = group.budgetMax ?? group.budget ?? null;
+  const budgetMin = group.budgetMin ?? group.budget ?? budgetMax;
+  return { budgetMin, budgetMax };
+}
+
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
 export function createGroupSchema(maxParticipants) {
   return z
     .object({
       name: text(2, 80, 'El nombre del grupo'),
-      budget: z.coerce
-        .number({ error: 'El presupuesto debe ser un número.' })
-        .positive('El presupuesto debe ser mayor que 0.')
-        .max(100000, 'El presupuesto es demasiado alto.')
-        .transform((v) => Math.round(v * 100) / 100),
+      budgetMin: money('El importe mínimo'),
+      budgetMax: money('El importe máximo'),
       currency: z.enum(CURRENCIES).default('EUR'),
       exchangeDate: z
         .string()
@@ -112,6 +123,9 @@ export function createGroupSchema(maxParticipants) {
           }
         }
       });
+      if (data.budgetMin > data.budgetMax) {
+        issue(['budgetMax'], 'El máximo debe ser mayor o igual que el mínimo.');
+      }
       if (invalid) return;
       const analysis = analyzeDraw(data.participants.map((p) => ({ id: p.ref, exclusions: p.exclusions })));
       if (!analysis.possible) {

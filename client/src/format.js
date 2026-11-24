@@ -5,6 +5,16 @@ export const formatMoney = (amount, currency = 'EUR') =>
     minimumFractionDigits: Number(amount) % 1 === 0 ? 0 : 2,
   }).format(Number(amount) || 0);
 
+/** Texto del rango de gasto, por ejemplo "de 10 € a 30 €". */
+export function formatBudgetRange(min, max, currency = 'EUR') {
+  const high = max ?? min;
+  const low = min ?? high;
+  if (low == null || high == null) return '';
+  const from = formatMoney(low, currency);
+  const to = formatMoney(high, currency);
+  return `de ${from} a ${to}`;
+}
+
 export const formatDate = (isoDate) =>
   isoDate ? new Intl.DateTimeFormat('es-ES', { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${isoDate}T00:00:00Z`)) : '';
 

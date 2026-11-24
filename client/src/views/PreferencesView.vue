@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LoadingState from '../components/LoadingState.vue';
 import { api, linkErrorRoute, useLinkToken } from '../api.js';
-import { formatDate, formatDateTime, formatMoney, timeLeft } from '../format.js';
+import { formatBudgetRange, formatDate, formatDateTime, timeLeft } from '../format.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -102,7 +102,7 @@ onMounted(load);
           </div>
         </div>
         <div class="p-3 px-md-5 d-flex flex-wrap gap-2 align-items-center justify-content-between">
-          <span class="budget-pill"><i class="bi bi-wallet2"></i> Presupuesto máximo: {{ formatMoney(session.group.budget, session.group.currency) }}</span>
+          <span class="budget-pill"><i class="bi bi-wallet2"></i> Presupuesto {{ formatBudgetRange(session.group.budgetMin, session.group.budgetMax, session.group.currency) }}</span>
           <span v-if="session.group.exchangeDate" class="small text-secondary"><i class="bi bi-calendar-event me-1"></i>{{ formatDate(session.group.exchangeDate) }}</span>
         </div>
       </div>

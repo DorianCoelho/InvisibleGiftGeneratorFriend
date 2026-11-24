@@ -5,7 +5,7 @@ import { analyzeDraw } from '@amigo-invisible/shared/draw';
 import ExclusionPicker from '../components/ExclusionPicker.vue';
 import LoadingState from '../components/LoadingState.vue';
 import { api, forgetLinkToken, linkErrorRoute, useLinkToken } from '../api.js';
-import { formatDate, formatDateTime, formatMoney, timeLeft } from '../format.js';
+import { formatBudgetRange, formatDate, formatDateTime, timeLeft } from '../format.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -192,7 +192,7 @@ onBeforeUnmount(() => clearInterval(timer));
               <div class="small text-white-50 text-uppercase fw-semibold"><i class="bi bi-speedometer2 me-1"></i>Panel del organizador</div>
               <h1 class="h2 mb-2">{{ group.name }}</h1>
               <div class="d-flex flex-wrap gap-2">
-                <span class="badge rounded-pill bg-white text-primary px-3 py-2"><i class="bi bi-wallet2 me-1"></i>Máx. {{ formatMoney(group.budget, group.currency) }}</span>
+                <span class="badge rounded-pill bg-white text-primary px-3 py-2"><i class="bi bi-wallet2 me-1"></i>{{ formatBudgetRange(group.budgetMin, group.budgetMax, group.currency) }}</span>
                 <span v-if="group.exchangeDate" class="badge rounded-pill bg-white text-primary px-3 py-2">
                   <i class="bi bi-calendar-event me-1"></i>{{ formatDate(group.exchangeDate) }}
                 </span>

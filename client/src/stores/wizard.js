@@ -13,7 +13,8 @@ const blank = () => ({
   group: {
     name: '',
     participantCount: 4,
-    budget: 20,
+    budgetMin: 10,
+    budgetMax: 30,
     currency: 'EUR',
     exchangeDate: '',
     organizerName: '',
@@ -28,7 +29,14 @@ const blank = () => ({
 function load() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
-    if (saved?.group) return { ...blank(), ...saved };
+    if (saved?.group) {
+      const group = { ...blank().group, ...saved.group };
+      // Grupos empezados cuando solo existía un presupuesto máximo.
+      if (group.budgetMin == null && group.budget != null) group.budgetMin = group.budget;
+      if (group.budgetMax == null && group.budget != null) group.budgetMax = group.budget;
+      delete group.budget;
+      return { ...blank(), ...saved, group };
+    }
   } catch {
     /* almacenamiento no disponible o datos antiguos */
   }
@@ -79,6 +87,15 @@ export function toggleExclusion(participant, otherRef) {
 
 export const displayName = (p, index) => p.name.trim() || `Participante ${index + 1}`;
 
+function amountError(value, label) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return `${label} debe ser mayor que 0.`;
+  if (amount > 100000) return `${label} es demasiado alto.`;
+  return null;
+}
+
+const roundMoney = (value) => Math.round(Number(value) * 100) / 100;
+
 export function validateGroupStep() {
   const g = wizard.group;
   const errors = {};
@@ -90,9 +107,13 @@ export function validateGroupStep() {
   if (!Number.isInteger(count) || count < MIN_PARTICIPANTS || count > MAX_PARTICIPANTS) {
     errors.participantCount = `Debe haber entre ${MIN_PARTICIPANTS} y ${MAX_PARTICIPANTS} participantes.`;
   }
-  const budget = Number(g.budget);
-  if (!Number.isFinite(budget) || budget <= 0) errors.budget = 'El presupuesto debe ser mayor que 0.';
-  else if (budget > 100000) errors.budget = 'El presupuesto es demasiado alto.';
+  const minError = amountError(g.budgetMin, 'El mínimo');
+  const maxError = amountError(g.budgetMax, 'El máximo');
+  if (minError) errors.budgetMin = minError;
+  if (maxError) errors.budgetMax = maxError;
+  else if (!minError && Number(g.budgetMin) > Number(g.budgetMax)) {
+    errors.budgetMax = 'El máximo debe ser mayor o igual que el mínimo.';
+  }
 
   if (g.organizerName.trim().length < 2) errors.organizerName = 'Indica tu nombre.';
   if (!EMAIL_RE.test(g.organizerEmail.trim())) errors.organizerEmail = 'Introduce un correo electrónico válido.';
@@ -146,7 +167,8 @@ export function toPayload() {
   const g = wizard.group;
   return {
     name: g.name.trim(),
-    budget: Number(g.budget),
+    budgetMin: roundMoney(g.budgetMin),
+    budgetMax: roundMoney(g.budgetMax),
     currency: g.currency,
     exchangeDate: g.exchangeDate || null,
     organizer: { name: g.organizerName.trim(), email: g.organizerEmail.trim() },

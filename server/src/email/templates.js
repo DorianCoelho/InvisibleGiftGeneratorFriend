@@ -9,6 +9,12 @@ const escapeHtml = (value) =>
 export const formatMoney = (amount, currency = 'EUR') =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency, minimumFractionDigits: amount % 1 === 0 ? 0 : 2 }).format(amount);
 
+export function formatBudgetRange(min, max, currency = 'EUR') {
+  const high = max ?? min;
+  const low = min ?? high;
+  return `de ${formatMoney(low, currency)} a ${formatMoney(high, currency)}`;
+}
+
 export const formatDate = (isoDate) =>
   new Intl.DateTimeFormat('es-ES', { dateStyle: 'full', timeZone: 'UTC' }).format(new Date(`${isoDate}T00:00:00Z`));
 
@@ -50,12 +56,12 @@ const infoBox = (rows) =>
    ${rows.map(([k, v]) => `<tr><td style="padding:8px 0;color:${COLORS.muted};">${escapeHtml(k)}</td><td style="padding:8px 0;text-align:right;font-weight:700;">${escapeHtml(v)}</td></tr>`).join('')}
    </table>`;
 
-export function invitationEmail({ participantName, groupName, organizerName, budget, currency, exchangeDate, link, expiresAt }) {
-  const money = formatMoney(budget, currency);
+export function invitationEmail({ participantName, groupName, organizerName, budgetMin, budgetMax, currency, exchangeDate, link, expiresAt }) {
+  const money = formatBudgetRange(budgetMin, budgetMax, currency);
   const rows = [
     ['Grupo', groupName],
     ['Organiza', organizerName],
-    ['Presupuesto máximo', money],
+    ['Presupuesto', money],
     ...(exchangeDate ? [['Intercambio', formatDate(exchangeDate)]] : []),
   ];
   const subject = `🎁 Te han invitado al Amigo Invisible "${groupName}"`;
@@ -72,7 +78,7 @@ export function invitationEmail({ participantName, groupName, organizerName, bud
   const text = `Hola, ${participantName}:
 
 ${organizerName} te ha incluido en el Amigo Invisible "${groupName}".
-Presupuesto máximo: ${money}${exchangeDate ? `\nIntercambio: ${formatDate(exchangeDate)}` : ''}
+Presupuesto: ${money}${exchangeDate ? `\nIntercambio: ${formatDate(exchangeDate)}` : ''}
 
 Indica tres regalos que te gustaría recibir en este enlace personal:
 ${link}
@@ -101,8 +107,8 @@ ${adminLink}`;
   return { subject, html, text };
 }
 
-export function resultEmail({ giverName, groupName, receiverName, budget, currency, items, exchangeDate }) {
-  const money = formatMoney(budget, currency);
+export function resultEmail({ giverName, groupName, receiverName, budgetMin, budgetMax, currency, items, exchangeDate }) {
+  const money = formatBudgetRange(budgetMin, budgetMax, currency);
   const itemsHtml = items
     .map(
       (item, i) => `<tr><td style="padding:12px 0;border-bottom:1px solid #f1e6d8;vertical-align:top;">
@@ -122,7 +128,7 @@ export function resultEmail({ giverName, groupName, receiverName, budget, curren
         <div style="color:${COLORS.muted};font-size:14px;">Te ha tocado regalar a</div>
         <div style="font-size:28px;font-weight:800;color:${COLORS.red};margin-top:4px;">${escapeHtml(receiverName)}</div>
       </div>
-      ${infoBox([['Presupuesto máximo', money], ...(exchangeDate ? [['Intercambio', formatDate(exchangeDate)]] : [])])}
+      ${infoBox([['Presupuesto', money], ...(exchangeDate ? [['Intercambio', formatDate(exchangeDate)]] : [])])}
       <p style="margin-bottom:0;"><strong>Estas son sus preferencias:</strong></p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemsHtml}</table>
       <p style="text-align:center;font-size:18px;margin-top:24px;">🤫 <strong>¡Recuerda mantenerlo en secreto!</strong></p>`,
@@ -135,7 +141,7 @@ Ya se ha realizado el sorteo del grupo "${groupName}".
 
 Te ha tocado regalar a ${receiverName}.
 
-Presupuesto máximo: ${money}.${exchangeDate ? `\nFecha del intercambio: ${formatDate(exchangeDate)}.` : ''}
+Presupuesto: ${money}.${exchangeDate ? `\nFecha del intercambio: ${formatDate(exchangeDate)}.` : ''}
 
 Estas son sus preferencias:
 

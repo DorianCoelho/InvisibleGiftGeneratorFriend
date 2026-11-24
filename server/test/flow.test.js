@@ -63,7 +63,8 @@ async function setup({ deleteGroupWhenCompleted = true, failFor = new Set() } = 
 
 const groupPayload = () => ({
   name: 'Navidad 2026',
-  budget: 30,
+  budgetMin: 15,
+  budgetMax: 30,
   currency: 'EUR',
   exchangeDate: null,
   organizer: { name: 'Ana', email: 'ana@example.com' },
@@ -109,7 +110,8 @@ test('flujo completo: crear, invitar, preferencias, sorteo, resultados y borrado
   const tokens = Object.fromEntries(invitations.map((m) => [m.to, tokenFrom(m)]));
   const session = await ctx.api('GET', `/groups/${groupId}/me`, { token: tokens['pedro@example.com'] });
   assert.equal(session.body.participant.name, 'Pedro');
-  assert.equal(session.body.group.budget, 30);
+  assert.equal(session.body.group.budgetMin, 15);
+  assert.equal(session.body.group.budgetMax, 30);
 
   // Validación: deben ser 3 regalos.
   const bad = await ctx.api('PUT', `/groups/${groupId}/me/preferences`, {
@@ -134,7 +136,7 @@ test('flujo completo: crear, invitar, preferencias, sorteo, resultados y borrado
   const pedro = results.find((m) => m.to === 'pedro@example.com');
   assert.ok(!pedro.text.includes('Te ha tocado regalar a María'));
   assert.ok(!pedro.text.includes('Te ha tocado regalar a Pedro'));
-  assert.match(pedro.text, /Presupuesto máximo: 30\s€/);
+  assert.match(pedro.text, /Presupuesto: de 15\s€ a 30\s€/);
 
   // Datos eliminados al completarse; queda un marcador sin datos personales.
   await waitFor(async () => !(await ctx.store.exists(groupId)));

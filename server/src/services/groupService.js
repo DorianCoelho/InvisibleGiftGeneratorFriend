@@ -1,7 +1,7 @@
 import { analyzeDraw } from '@amigo-invisible/shared/draw';
 import { errors } from '../errors.js';
 import { newId } from '../security/crypto.js';
-import { createGroupSchema, parse, participantIdsSchema, restrictionsSchema } from '../validation.js';
+import { budgetFields, createGroupSchema, parse, participantIdsSchema, restrictionsSchema } from '../validation.js';
 
 const nowIso = () => new Date().toISOString();
 const EDITABLE_STATUSES = ['collecting', 'draw_failed'];
@@ -38,7 +38,8 @@ export function createGroupService({ config, store, crypto, dispatcher, drawServ
         schemaVersion: 1,
         id: groupId,
         name: data.name,
-        budget: data.budget,
+        budgetMin: data.budgetMin,
+        budgetMax: data.budgetMax,
         currency: data.currency,
         exchangeDate: data.exchangeDate,
         organizer: data.organizer,
@@ -135,7 +136,7 @@ export function createGroupService({ config, store, crypto, dispatcher, drawServ
       group: {
         id: group.id,
         name: group.name,
-        budget: group.budget,
+        ...budgetFields(group),
         currency: group.currency,
         exchangeDate: group.exchangeDate,
         organizer: group.organizer,

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { api } from '../../api.js';
 import { wizard, toPayload, displayName } from '../../stores/wizard.js';
-import { formatDate, formatMoney } from '../../format.js';
+import { formatBudgetRange, formatDate } from '../../format.js';
 
 const router = useRouter();
 const submitting = ref(false);
@@ -37,7 +37,7 @@ async function confirm() {
           <div class="small text-white-50 text-uppercase fw-semibold">Resumen</div>
           <h2 class="h3 mb-3">{{ wizard.group.name }}</h2>
           <div class="d-flex flex-wrap gap-2">
-            <span class="badge rounded-pill bg-white text-primary px-3 py-2"><i class="bi bi-wallet2 me-1"></i>Máx. {{ formatMoney(wizard.group.budget, wizard.group.currency) }}</span>
+            <span class="badge rounded-pill bg-white text-primary px-3 py-2"><i class="bi bi-wallet2 me-1"></i>{{ formatBudgetRange(wizard.group.budgetMin, wizard.group.budgetMax, wizard.group.currency) }}</span>
             <span class="badge rounded-pill bg-white text-primary px-3 py-2"><i class="bi bi-people me-1"></i>{{ wizard.participants.length }} participantes</span>
             <span v-if="wizard.group.exchangeDate" class="badge rounded-pill bg-white text-primary px-3 py-2">
               <i class="bi bi-calendar-event me-1"></i>{{ formatDate(wizard.group.exchangeDate) }}

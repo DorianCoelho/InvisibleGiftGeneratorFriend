@@ -1,5 +1,5 @@
 import { AppError, errors } from '../errors.js';
-import { parse, preferencesSchema } from '../validation.js';
+import { budgetFields, parse, preferencesSchema } from '../validation.js';
 
 const EDITABLE_STATUSES = ['collecting', 'draw_failed'];
 
@@ -54,7 +54,7 @@ export function createParticipantService({ store, crypto, drawService, groupServ
       participant: { name: participant.name },
       group: {
         name: group.name,
-        budget: group.budget,
+        ...budgetFields(group),
         currency: group.currency,
         exchangeDate: group.exchangeDate,
         organizerName: group.organizer.name,

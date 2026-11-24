@@ -48,7 +48,7 @@ const features = [
               <div class="card-soft mock-card p-3">
                 <div class="small text-secondary">Te ha tocado regalar a</div>
                 <div class="fs-3 fw-bold text-primary display-font">María</div>
-                <div class="budget-pill mt-2 small"><i class="bi bi-wallet2"></i> Hasta 30 €</div>
+                <div class="budget-pill mt-2 small"><i class="bi bi-wallet2"></i> De 15 € a 30 €</div>
                 <ul class="list-unstyled small mt-3 mb-0 text-secondary">
                   <li><i class="bi bi-check2-circle text-success me-1"></i>Un libro de cocina italiana</li>
                   <li><i class="bi bi-check2-circle text-success me-1"></i>Una taza personalizada</li>
