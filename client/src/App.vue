@@ -1,5 +1,11 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router';
+import { computed } from 'vue';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
+
+const route = useRoute();
+// En preferencias la URL cambia con el token de cada persona: hay que remontar
+// la página para no reutilizar el formulario de quien respondió antes.
+const viewKey = computed(() => (route.name === 'preferences' ? route.fullPath : (route.matched[0]?.path ?? route.path)));
 </script>
 
 <template>
@@ -18,7 +24,7 @@ import { RouterLink, RouterView } from 'vue-router';
   <main class="flex-grow-1 pb-5">
     <RouterView v-slot="{ Component }">
       <Transition name="fade-up" mode="out-in">
-        <component :is="Component" />
+        <component :is="Component" :key="viewKey" />
       </Transition>
     </RouterView>
   </main>

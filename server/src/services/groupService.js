@@ -20,6 +20,12 @@ export function createGroupService({ config, store, crypto, dispatcher, drawServ
   }
 
   async function createGroup(input) {
+    if (config.persistentStorage === false) {
+      throw errors.conflict(
+        'ephemeral_storage',
+        'En Vercel los archivos del grupo se borran al acabar la petición. Configura Cloudflare R2 (R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID y R2_SECRET_ACCESS_KEY) y vuelve a crear el grupo.',
+      );
+    }
     const data = parse(schema, input);
     const groupId = newId();
     const adminToken = crypto.generateToken();

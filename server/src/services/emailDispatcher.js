@@ -37,7 +37,7 @@ export function createEmailDispatcher({ config, store, crypto, sender, logger })
     return { ok: false, attempts: maxAttempts, error: lastError };
   }
 
-  const participantLink = (groupId, token) => `${config.appBaseUrl}/preferencias/${groupId}#${token}`;
+  const participantLink = (groupId, token) => `${config.appBaseUrl}/preferencias/${groupId}/${token}`;
   const adminLink = (groupId, token) => `${config.appBaseUrl}/organizador/${groupId}#${token}`;
 
   // ---------------------------------------------------------------------------

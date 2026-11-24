@@ -40,6 +40,12 @@ const config = {
 
   dataDir: path.resolve(repoRoot, str('DATA_DIR', 'App_Data')),
   clientDistDir: path.resolve(repoRoot, str('CLIENT_DIST_DIR', 'client/dist')),
+  r2: {
+    accountId: str('R2_ACCOUNT_ID', ''),
+    bucket: str('R2_BUCKET', ''),
+    accessKeyId: str('R2_ACCESS_KEY_ID', ''),
+    secretAccessKey: str('R2_SECRET_ACCESS_KEY', ''),
+  },
 
   tokenSecret: str('TOKEN_SECRET'),
   invitationTtlHours: int('INVITATION_TTL_HOURS', 72, { min: 1, max: 24 * 30 }),
@@ -93,6 +99,12 @@ export function validateConfig(cfg = config) {
   if (cfg.isProduction && !cfg.appBaseUrl.startsWith('https://')) {
     errors.push('APP_BASE_URL debe usar https:// en producción.');
   }
+  const r2Values = [cfg.r2?.accountId, cfg.r2?.bucket, cfg.r2?.accessKeyId, cfg.r2?.secretAccessKey];
+  const r2Set = r2Values.filter(Boolean).length;
+  if (r2Set > 0 && r2Set < 4) {
+    errors.push('Para usar Cloudflare R2 hay que definir R2_ACCOUNT_ID, R2_BUCKET, R2_ACCESS_KEY_ID y R2_SECRET_ACCESS_KEY.');
+  }
+  cfg.persistentStorage = r2Set === 4 || !process.env.VERCEL;
   if (errors.length > 0) {
     throw new Error(`Configuración inválida (revisa tu archivo .env):\n - ${errors.join('\n - ')}`);
   }

@@ -6,6 +6,11 @@ import helmet from 'helmet';
 import { AppError } from './errors.js';
 import { createApiRouter } from './routes/api.js';
 
+/** Un token de acceso son 43 caracteres en base64url. No debe aparecer en los logs. */
+function safePath(urlPath) {
+  return String(urlPath).replace(/\/[A-Za-z0-9_-]{43}(?=\/|$)/g, '/[token]');
+}
+
 function parseTrustProxy(value) {
   if (value === 'true') return true;
   if (value === 'false') return false;
@@ -24,7 +29,7 @@ export function createApp({ config, services, logger }) {
     res.on('finish', () => {
       const ms = Number(process.hrtime.bigint() - start) / 1e6;
       const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'debug';
-      logger[level]({ id, method: req.method, path: req.path, status: res.statusCode, ms: Math.round(ms) }, 'request');
+      logger[level]({ id, method: req.method, path: safePath(req.path), status: res.statusCode, ms: Math.round(ms) }, 'request');
     });
     next();
   });

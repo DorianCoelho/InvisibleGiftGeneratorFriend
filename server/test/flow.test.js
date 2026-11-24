@@ -76,8 +76,41 @@ const groupPayload = () => ({
   ],
 });
 
-const tokenFrom = (msg) => /#([A-Za-z0-9_-]+)/.exec(msg.text)[1];
+const tokenFrom = (msg) => {
+  const hashed = /#([A-Za-z0-9_-]{20,})/.exec(msg.text);
+  if (hashed) return hashed[1];
+  const inPath = /\/preferencias\/[0-9a-f-]{36}\/([A-Za-z0-9_-]{20,})/.exec(msg.text);
+  if (inPath) return inPath[1];
+  throw new Error(`No se encontró el token en el correo para ${msg.to}`);
+};
 const items = (n) => [1, 2, 3].map((i) => ({ name: `Regalo ${n}-${i}`, description: '', url: '' }));
+
+test('guardar las preferencias de una persona no invalida los enlaces de las demás', async (t) => {
+  const ctx = await setup();
+  t.after(ctx.close);
+
+  const created = await ctx.api('POST', '/groups', { body: groupPayload() });
+  assert.equal(created.status, 201);
+  const { groupId } = created.body;
+  await waitFor(() => ctx.outbox.filter((m) => m.subject.includes('invitado')).length === 4);
+
+  const tokens = Object.fromEntries(ctx.outbox.filter((m) => m.subject.includes('invitado')).map((m) => [m.to, tokenFrom(m)]));
+  const names = { 'maria@example.com': 'María', 'luis@example.com': 'Luis', 'eva@example.com': 'Eva' };
+  const saved = await ctx.api('PUT', `/groups/${groupId}/me/preferences`, {
+    token: tokens['pedro@example.com'],
+    body: { items: items('pedro') },
+  });
+  assert.equal(saved.status, 200);
+  assert.equal(saved.body.drawDone, false);
+
+  for (const email of Object.keys(names)) {
+    const session = await ctx.api('GET', `/groups/${groupId}/me`, { token: tokens[email] });
+    assert.equal(session.status, 200);
+    assert.equal(session.body.participant.name, names[email]);
+    assert.equal(session.body.preferences, null);
+    assert.equal(session.body.canEdit, true);
+  }
+});
 
 test('flujo completo: crear, invitar, preferencias, sorteo, resultados y borrado', async (t) => {
   const ctx = await setup();

@@ -1,14 +1,14 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LoadingState from '../components/LoadingState.vue';
-import { api, linkErrorRoute, useLinkToken } from '../api.js';
+import { api, linkErrorRoute, readLinkToken, TOKEN_RE, useLinkToken } from '../api.js';
 import { formatBudgetRange, formatDate, formatDateTime, timeLeft } from '../format.js';
 
 const route = useRoute();
 const router = useRouter();
 const groupId = route.params.groupId;
-const token = useLinkToken('participant', groupId);
+const token = ref(useLinkToken('participant', groupId));
 
 const loading = ref(true);
 const saving = ref(false);
@@ -40,11 +40,16 @@ const itemErrors = computed(() =>
 const shownErrors = computed(() => (submitted.value ? itemErrors.value : [{}, {}, {}]));
 const completedCount = computed(() => items.filter((i) => i.name.trim().length >= 2).length);
 
+function blankItems() {
+  items.forEach((item) => Object.assign(item, { name: '', description: '', url: '' }));
+}
+
 async function load() {
-  if (!token) return router.replace({ name: 'invalid-link', query: { motivo: 'invalido' } });
+  if (!token.value) return router.replace({ name: 'invalid-link', query: { motivo: 'invalido' } });
   try {
-    session.value = await api.participantSession(groupId, token);
+    session.value = await api.participantSession(groupId, token.value);
     if (session.value.drawDone) return router.replace({ name: 'draw-done', params: { groupId } });
+    blankItems();
     session.value.preferences?.items.forEach((item, i) => Object.assign(items[i], { description: '', url: '', ...item }));
   } catch (err) {
     const target = linkErrorRoute(err, groupId);
@@ -66,7 +71,7 @@ async function save() {
   try {
     const result = await api.savePreferences(
       groupId,
-      token,
+      token.value,
       items.map((i) => ({ name: i.name.trim(), description: i.description.trim(), url: i.url.trim() })),
     );
     router.push({ name: 'preferences-saved', params: { groupId }, query: { sorteo: result.drawDone ? '1' : undefined } });
@@ -80,7 +85,32 @@ async function save() {
   }
 }
 
-onMounted(load);
+function openThisLink() {
+  const param = typeof route.params.token === 'string' ? route.params.token : '';
+  const next = readLinkToken('participant', groupId, { param, hash: window.location.hash });
+  if (!next || next === token.value) return;
+  token.value = next;
+  session.value = null;
+  submitted.value = false;
+  saveError.value = null;
+  loading.value = true;
+  loadError.value = null;
+  load();
+}
+
+function onHashChange() {
+  const incoming = window.location.hash.replace(/^#/, '');
+  // Un enlace antiguo (#token) abierto encima de esta página no recarga el
+  // documento. Sin esto, seguiría viéndose quien ya guardó sus preferencias.
+  if (TOKEN_RE.test(incoming)) window.location.reload();
+}
+
+watch(() => route.params.token, () => openThisLink());
+onMounted(() => {
+  window.addEventListener('hashchange', onHashChange);
+  load();
+});
+onBeforeUnmount(() => window.removeEventListener('hashchange', onHashChange));
 </script>
 
 <template>

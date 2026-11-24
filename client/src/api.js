@@ -1,3 +1,6 @@
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 export class ApiError extends Error {
   constructor(status, body) {
     super(body?.message ?? 'Ha ocurrido un error inesperado.');
@@ -45,28 +48,65 @@ export const api = {
   savePreferences: (groupId, token, items) => request('PUT', `/groups/${groupId}/me/preferences`, { token, body: { items } }),
 };
 
-/**
- * Recupera el token de acceso del fragmento de la URL (#token). El fragmento
- * nunca se envía al servidor ni aparece en logs; tras leerlo lo guardamos en
- * sessionStorage y lo quitamos de la barra de direcciones.
- */
-export function useLinkToken(scope, groupId) {
-  const key = `amigo:${scope}:${groupId}`;
-  const fromHash = window.location.hash.replace(/^#/, '');
-  if (/^[A-Za-z0-9_-]{20,128}$/.test(fromHash)) {
-    try {
-      sessionStorage.setItem(key, fromHash);
-    } catch {
-      /* almacenamiento no disponible */
-    }
-    history.replaceState(history.state, '', window.location.pathname + window.location.search);
-    return fromHash;
-  }
+export const TOKEN_RE = /^[A-Za-z0-9_-]{20,128}$/;
+
+function storageKey(scope, groupId) {
+  return `amigo:${scope}:${groupId}`;
+}
+
+function rememberToken(scope, groupId, token) {
   try {
-    return sessionStorage.getItem(key);
+    sessionStorage.setItem(storageKey(scope, groupId), token);
+  } catch {
+    /* almacenamiento no disponible: el token sigue en la URL de esta visita */
+  }
+}
+
+function storedToken(scope, groupId) {
+  try {
+    return sessionStorage.getItem(storageKey(scope, groupId));
   } catch {
     return null;
   }
+}
+
+/**
+ * Elige el token de esta visita. Un enlace nuevo (en la ruta o en el #) siempre
+ * gana al que hubiera guardado el navegador: así, en el mismo dispositivo, cada
+ * persona abre su propio formulario y no el de quien respondió antes.
+ */
+export function readLinkToken(scope, groupId, { param = '', hash = '' } = {}) {
+  const fromParam = TOKEN_RE.test(param) ? param : '';
+  const fromHash = TOKEN_RE.test(String(hash).replace(/^#/, '')) ? String(hash).replace(/^#/, '') : '';
+  const incoming = fromParam || fromHash;
+  if (incoming) {
+    rememberToken(scope, groupId, incoming);
+    return incoming;
+  }
+  return storedToken(scope, groupId);
+}
+
+/**
+ * Recupera el token y, si venía en la URL, lo quita de la barra de direcciones
+ * después de recordarlo. Hay que llamarlo dentro de setup().
+ */
+export function useLinkToken(scope, groupId) {
+  const route = useRoute();
+  const router = useRouter();
+  const param = typeof route.params.token === 'string' ? route.params.token : '';
+  const token = readLinkToken(scope, groupId, { param, hash: route.hash || window.location.hash });
+
+  onMounted(() => {
+    const hashToken = (route.hash || '').replace(/^#/, '');
+    if (!TOKEN_RE.test(param) && !TOKEN_RE.test(hashToken)) return;
+    // Si no pudimos guardarlo, el token tiene que seguir en la URL.
+    if (storedToken(scope, groupId) !== token) return;
+    const params = { ...route.params };
+    delete params.token;
+    router.replace({ name: route.name, params, query: route.query, hash: '' }).catch(() => {});
+  });
+
+  return token;
 }
 
 export function forgetLinkToken(scope, groupId) {

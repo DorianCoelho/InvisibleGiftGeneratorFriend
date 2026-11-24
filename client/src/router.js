@@ -24,12 +24,17 @@ const routes = [
     ],
   },
   { path: '/crear/listo', name: 'group-created', component: () => import('./views/GroupCreatedView.vue'), meta: { title: '¡Grupo creado!' } },
-  { path: '/preferencias/:groupId', name: 'preferences', component: () => import('./views/PreferencesView.vue'), meta: { title: 'Mis preferencias' } },
   {
     path: '/preferencias/:groupId/guardado',
     name: 'preferences-saved',
     component: () => import('./views/PreferencesSavedView.vue'),
     meta: { title: 'Preferencias guardadas' },
+  },
+  {
+    path: '/preferencias/:groupId/:token([A-Za-z0-9_-]{20,128})?',
+    name: 'preferences',
+    component: () => import('./views/PreferencesView.vue'),
+    meta: { title: 'Mis preferencias' },
   },
   { path: '/sorteo/:groupId?', name: 'draw-done', component: () => import('./views/DrawDoneView.vue'), meta: { title: 'Sorteo realizado' } },
   { path: '/organizador/:groupId', name: 'admin', component: () => import('./views/AdminView.vue'), meta: { title: 'Panel del organizador' } },
